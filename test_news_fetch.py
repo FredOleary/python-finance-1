@@ -21,13 +21,13 @@ if __name__ == "__main__":
     ts = now.timestamp()
     newNow = datetime.fromtimestamp(ts)
     
-    symbol = "LITE"
+    symbol = "INTC"
     
     finance = FinanceDB(stock_data)
     finance.initialize()
 
-    news = YahooFinanceNews.get_news_for_stock("LITE")
-    finance.add_news( "LITE", news)
+    news = YahooFinanceNews.get_news_for_stock(symbol)
+    finance.add_news( symbol, news)
     print( news)
     
     
