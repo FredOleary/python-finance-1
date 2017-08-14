@@ -22,12 +22,11 @@ if __name__ == "__main__":
     query = "SELECT * FROM prices WHERE symbol = '%(symbol)s'"
     df = pd.read_sql( query % {"symbol":test}, connnection )  
       
-    grouped = df.groupby('time').count()
     x = df['time']
     y = df['price']
     
     fig = plt.figure()
-    fig.suptitle('Scatter Plot', fontsize=14, fontweight='bold')
+    fig.suptitle('Line Plot', fontsize=14, fontweight='bold')
     ax = fig.add_subplot(111)
     fig.subplots_adjust(top=0.85)
 
