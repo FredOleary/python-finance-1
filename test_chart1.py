@@ -21,9 +21,7 @@ if __name__ == "__main__":
     test = "LITE"
     query = "SELECT * FROM prices WHERE symbol = '%(symbol)s'"
     df = pd.read_sql( query % {"symbol":test}, connnection )  
-    #print( df)
-    #df['time'] = df['time'].apply(lambda x: datetime.fromtimestamp(x))
-       
+      
     grouped = df.groupby('time').count()
     x = df['time']
     y = df['price']
@@ -42,7 +40,4 @@ if __name__ == "__main__":
     fig.autofmt_xdate()
     
     plt.show()
-    #df.plot(kind='scatter',x='time',y='weight')
-    
-    #print( df)
     

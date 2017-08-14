@@ -15,6 +15,7 @@ from html.parser import HTMLParser
 from datetime import datetime  
 from datetime import timedelta  
 from dateutil import parser
+from dateutil import tz
 
 class MyHTMLParser(HTMLParser):
     def __init__(self):
@@ -45,7 +46,7 @@ class MyHTMLParser(HTMLParser):
     def handle_data(self, data):
         if self.level_array[self.level-1] == 1 :
             if self.triggered == True :
-                print("Encountered some data len:", len(data), " ->",  data)
+                #print("Encountered some data len:", len(data), " ->",  data)
                 self.news_results.append(data)
             elif data == "Press Releases" :
                self.triggered = True
@@ -84,7 +85,7 @@ class NewsParser :
      
      def _process_date_time( self, date_diff):
         #date_diff is of the form N days/minutes/hours ago. E.g. 3 hours ago 
-        news_date_time = datetime.now()
+        news_date_time = datetime.now(tz.tzlocal())
         tokens = date_diff.split()
         if len(tokens) >= 3 :
             num = int(tokens[0])
@@ -103,6 +104,10 @@ class NewsParser :
                 return None
             news_date_time = news_date_time - timedelta( seconds = num)
         
+        #convert to GM time zone
+        news_date_time = news_date_time.astimezone(pytz.utc)
+        #remove timezone info - sqlite won't parse it correctly
+        news_date_time = news_date_time.replace(tzinfo=None) 
         return news_date_time
        
 def get_news_for_stock( stock_ticker ):
@@ -149,7 +154,7 @@ def get_quotes_for_stock(stock_ticker ):
         
         dt_est = parser.parse(key);  # Date time with no TZ info
         
-        dt_est = pytz.timezone('US/Eastern').localize(dt_est) # Date time with no EST info
+        dt_est = pytz.timezone('US/Eastern').localize(dt_est) # Date time with EST info
         
         dt_gmt = dt_est.astimezone(pytz.utc) # Date time with as GMT
         
