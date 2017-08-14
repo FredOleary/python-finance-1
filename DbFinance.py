@@ -17,7 +17,7 @@ class FinanceDB():
         self.tables = [{ "name":"stocks",
                          "create_sql": """ CREATE TABLE IF NOT EXISTS stocks (
                                         symbol TEXT PRIMARY KEY,
-                                        description TEXT
+                                        description TEXT,
                                     ); """ }, \
                        { "name" :"prices",
                          "create_sql": """ CREATE TABLE IF NOT EXISTS prices (
@@ -29,11 +29,12 @@ class FinanceDB():
                        { "name" :"news",
                          "create_sql": """ CREATE TABLE IF NOT EXISTS news (
                                         symbol TEXT,
-                                        time REAL INTEGER NOT NULL,
+                                        time TIMESTAMP NOT NULL,
                                         source TEXT NOT NULL,
                                         title TEXT NOT NULL,
                                         description TEXT NOT NULL,
-                                        weight INTEGER NOT NULL
+                                        weight INTEGER NOT NULL,
+                                        hash TEXT
                                     ); """ } ]
         
     def initialize( self ) :       
@@ -64,34 +65,31 @@ class FinanceDB():
     def add_news( self, symbol, newsList ):
         if newsList :
             for news in newsList :
-                if not self._news_already_added( symbol, news ):
+                newsHash =  self._news_already_added( symbol, news )
+                if newsHash:
+                    print( "Adding news item to database")
                     cursor = self.connnection.cursor()
-                    cursor.execute("INSERT INTO news VALUES (?,?,?,?,?,?)", [symbol,\
-                               news["time"].timestamp(), \
+                    cursor.execute("INSERT INTO news VALUES (?,?,?,?,?,?, ?)", [symbol,\
+                               news["time"], \
                                news["source"], \
                                news["title"], \
                                news["description"], \
-                               0] )
+                               0, \
+                               newsHash] )
                     self.connnection.commit()
            
     def _news_already_added( self, symbol, news ):
-        tsBefore = (news["time"] - timedelta(days=1)).timestamp()
-        tsAfter  = (news["time"] + timedelta(days=1)).timestamp()
         h = blake2b()
         h.update(news["description"].encode())
-        newHash = h.hexdigest()
+        newsHash = h.hexdigest()
         
         cursor = self.connnection.cursor()
-        cursor.execute( "SELECT * FROM news WHERE symbol = ? AND  time >= ? AND time <= ? ", [ symbol,tsBefore, tsAfter])
+        cursor.execute( "SELECT * FROM news WHERE symbol = ? AND  hash = ? ", [ symbol,newsHash])
         rows = cursor.fetchall()
-        for row in rows :
-            h = blake2b()
-            h.update(row[4].encode())
-            existingHash = h.hexdigest()
-            if existingHash == newHash :
-                return True
-            
-        return False
+        if rows :
+            print( "News item already exists in database")
+            return None
+        return newsHash
 
         
     def _create_verify_tables(self):
