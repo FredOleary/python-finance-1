@@ -7,28 +7,17 @@ Created on Mon Aug  7 17:04:10 2017
 """
 
 from platform import python_version
-import YahooFinanceNews  
+import YahooFinanceNews
 from DbFinance import FinanceDB
-from datetime import datetime  
+from CompanyList import CompanyWatch
 
 
-stock_data = [{"symbol": "INTC", "description": "Intel Corporation" },
-              {"symbol": "LITE", "description": "Lumentum Corporation" },
-              {"symbol": "MSFT", "description": "Microsoft Corporation" }]
 if __name__ == "__main__":
     print('Python', python_version())
-    
-    now = datetime.now()
-    ts = now.timestamp()
-    newNow = datetime.fromtimestamp(ts)
-    
-    symbol = "MSFT"
-    
-    finance = FinanceDB(stock_data)
-    finance.initialize()
-
-    news = YahooFinanceNews.get_news_for_stock(symbol)
-    finance.add_news( symbol, news)
-    print( news)
-    
-    
+    COMPANIES = CompanyWatch()
+    SYMBOL = "MSFT"
+    FINANCE = FinanceDB(COMPANIES.get_companies())
+    FINANCE.initialize()
+    NEWS = YahooFinanceNews.get_news_for_stock(SYMBOL)
+    FINANCE.add_news(SYMBOL, NEWS)
+    print(NEWS)

@@ -76,13 +76,13 @@ class NewsParser:
         index = 0
         while (index +1) < len(self.news_data):
             if self.news_data[index +1] == "•":
-                if (index + 3) < len(self.news_data):
-                    date_time = self._process_date_time(self.news_data[index + 1])
+                if (index + 4) < len(self.news_data):
+                    date_time = self._process_date_time(self.news_data[index + 2])
                     if date_time is not None:
-                        news_item = {'source' : self.news_data[index-1], \
+                        news_item = {'source' : self.news_data[index], \
                                   'time' : date_time, \
-                                  'title' : self.news_data[index + 2], \
-                                  'description' : self.news_data[index + 3]}
+                                  'title' : self.news_data[index + 3], \
+                                  'description' : self.news_data[index + 4]}
                         self.news.append(news_item)
             index = index +1
         return self.news

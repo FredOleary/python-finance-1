@@ -6,7 +6,7 @@ Created on Tue Aug  8 19:35:54 2017
 @author: fredoleary
 """
 import sqlite3
-from hashlib import blake2b
+import hashlib
 
 class FinanceDB():
     """ Storage for news/prices etc """
@@ -80,7 +80,7 @@ class FinanceDB():
                                news_hash])
                     self.connnection.commit()
     def _news_already_added(self, symbol, news):
-        blake_hash = blake2b()
+        blake_hash = hashlib.blake2b()
         blake_hash.update(news["description"].encode())
         news_hash = blake_hash.hexdigest()
         cursor = self.connnection.cursor()
