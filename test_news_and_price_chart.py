@@ -12,50 +12,39 @@ import sqlite3
 import matplotlib.pyplot as plt
 import pandas as pd
 
-stock_data = [{"symbol": "INTC", "description": "Intel Corporation" },
-              {"symbol": "LITE", "description": "Lumentum Corporation" }]
 if __name__ == "__main__":
     print('Python', python_version())
-    
-    symbol = "INTC"
-    
-    connnection = sqlite3.connect("FinanceDb")
- 
-    query = "SELECT * FROM news WHERE symbol = '%(symbol)s'"
-    df_news = pd.read_sql( query % {"symbol":symbol}, connnection )  
-    
+
+    SYMBOL = "MSFT"
+
+    CONNECTION = sqlite3.connect("FinanceDb")
+
+    QUERY = "SELECT * FROM news WHERE symbol = '%(symbol)s'"
+    DF_NEWS = pd.read_sql(QUERY % {"symbol":SYMBOL}, CONNECTION)
+
     # May need to bias the weight to better chart prices
-    df_news['weight'] = df_news['weight'].apply(lambda x: x+53)
+    DF_NEWS['weight'] = DF_NEWS['weight'].apply(lambda x: x+70)
 
-    x = df_news['time']
-    y = df_news['weight']
-    
-    fig = plt.figure()
-    fig.suptitle('Scatter/Line Plot', fontsize=14, fontweight='bold')
-    ax_news = fig.add_subplot(111)
-    fig.subplots_adjust(top=0.85)
+    FIG = plt.figure()
+    FIG.suptitle('Scatter/Line Plot', fontsize=14, fontweight='bold')
+    AX_NEWS = FIG.add_subplot(111)
+    FIG.subplots_adjust(top=0.85)
+    AX_NEWS.set_xlabel('Date/Time')
+    AX_NEWS.set_ylabel('Weight')
+    AX_NEWS.plot_date(DF_NEWS['time'], DF_NEWS['weight'], xdate=True, ydate=False, color='skyblue')
 
-    ax_news.set_xlabel('Date/Time')
-    ax_news.set_ylabel('Weight')
+    QUERY = "SELECT * FROM prices WHERE symbol = '%(symbol)s'"
+    DF = pd.read_sql(QUERY % {"symbol":SYMBOL}, CONNECTION)
 
+    AX_PRICE = FIG.add_subplot(111)
+    FIG.subplots_adjust(top=0.85)
 
-    ax_news.plot_date(x, y, xdate=True, ydate=False, color='skyblue')
-    
-    
-    query = "SELECT * FROM prices WHERE symbol = '%(symbol)s'"
-    df = pd.read_sql( query % {"symbol":symbol}, connnection )  
-      
-    ax_price = fig.add_subplot(111)
-    fig.subplots_adjust(top=0.85)
-
-    ax_price.set_xlabel('Date/Time')
-    ax_price.set_ylabel('price')
+    AX_PRICE.set_xlabel('Date/Time')
+    AX_PRICE.set_ylabel('price')
 
 
-    ax_price.plot_date(df['time'], df['price'], 'b-', xdate=True, ydate=False, color='red')
-   
-    fig.autofmt_xdate()
-    
+    AX_PRICE.plot_date(DF['time'], DF['price'], 'b-', xdate=True, ydate=False, color='red')
+
+    FIG.autofmt_xdate()
+
     plt.show()
-    
-     
