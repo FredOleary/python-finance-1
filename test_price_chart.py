@@ -14,29 +14,19 @@ import pandas as pd
 
 if __name__ == "__main__":
     print('Python', python_version())
-    
-     
-    connnection = sqlite3.connect("FinanceDb")
-         
-    test = "LITE"
-    query = "SELECT * FROM prices WHERE symbol = '%(symbol)s'"
-    df = pd.read_sql( query % {"symbol":test}, connnection )  
-      
-    x = df['time']
-    y = df['price']
-    
-    fig = plt.figure()
-    fig.suptitle('Line Plot', fontsize=14, fontweight='bold')
-    ax = fig.add_subplot(111)
-    fig.subplots_adjust(top=0.85)
+    CONNECTION = sqlite3.connect("FinanceDb")
 
-    ax.set_xlabel('Date/Time')
-    ax.set_ylabel('price')
+    SYMBOL = "LITE"
+    DF = pd.read_sql("SELECT * FROM prices WHERE symbol = '%(symbol)s'" \
+                     % {"symbol":SYMBOL}, CONNECTION)
+    FIG = plt.figure()
+    FIG.suptitle('Line Plot', fontsize=14, fontweight='bold')
+    SUB_PLOT = FIG.add_subplot(111)
+    FIG.subplots_adjust(top=0.85)
+    SUB_PLOT.set_xlabel('Date/Time')
+    SUB_PLOT.set_ylabel('price')
+    SUB_PLOT.plot_date(DF['time'], DF['price'], 'b-', xdate=True, ydate=False, color='skyblue')
+    FIG.autofmt_xdate()
 
-
-    ax.plot_date(x, y, 'b-', xdate=True, ydate=False, color='skyblue')
-    
-    fig.autofmt_xdate()
-    
     plt.show()
     

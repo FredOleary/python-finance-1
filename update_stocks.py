@@ -15,10 +15,14 @@ from CompanyList import CompanyWatch
 if __name__ == "__main__":
     print('Python', python_version())
     COMPANIES = CompanyWatch()
-    SYMBOL = "LITE"
     FINANCE = FinanceDB(COMPANIES.get_companies())
     FINANCE.initialize()
-    QUOTES = YahooFinanceNews.get_quotes_for_stock(SYMBOL)
-    # print( quotes )
-    FINANCE.add_quotes(SYMBOL, QUOTES)
-    QUOTES = FINANCE.get_quotes(SYMBOL)
+    for COMPANY in COMPANIES.get_companies():
+        print("Updating: ", COMPANY["symbol"], " ", COMPANY["description"])
+        QUOTES = YahooFinanceNews.get_quotes_for_stock(COMPANY["symbol"])
+        FINANCE.add_quotes(COMPANY["symbol"], QUOTES)
+
+        NEWS = YahooFinanceNews.get_news_for_stock(COMPANY["symbol"])
+        FINANCE.add_news(COMPANY["symbol"], NEWS)
+
+    print("Done")

@@ -54,9 +54,10 @@ class FinanceDB():
                            quote["time"], \
                            quote["price"]])
                 self.connnection.commit()
-                print("value added for time: ", quote["time"])
+                #print("value added for time: ", quote["time"])
             except sqlite3.IntegrityError:
-                print("value already added for time: ", quote["time"])
+                pass
+                #print("value already added for time: ", quote["time"])
 
     def get_quotes(self, symbol):
         """ Fetch prices for symbol """
@@ -69,7 +70,7 @@ class FinanceDB():
             for news in news_list:
                 news_hash = self._news_already_added(symbol, news)
                 if news_hash:
-                    print("Adding news item to database")
+                    #print("Adding news item to database")
                     cursor = self.connnection.cursor()
                     cursor.execute("INSERT INTO news VALUES (?,?,?,?,?,?, ?)", [symbol,\
                                news["time"], \
@@ -87,7 +88,7 @@ class FinanceDB():
         cursor.execute("SELECT * FROM news WHERE symbol = ? AND  hash = ? ", [symbol, news_hash])
         rows = cursor.fetchall()
         if rows:
-            print("News item already exists in database")
+            #print("News item already exists in database")
             return None
         return news_hash
     def _create_verify_tables(self):

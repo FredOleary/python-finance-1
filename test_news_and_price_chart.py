@@ -16,10 +16,15 @@ if __name__ == "__main__":
     print('Python', python_version())
 
     SYMBOL = "MSFT"
+    
+    # optional time filter - Use "" for none
+    #TIME_FILTER =  "AND time BETWEEN '2017-08-11 18:57:00' AND '2017-08-11 19:05:00'")
+    TIME_FILTER =  " AND time > '2017-08-17 00:00:00'"
 
     CONNECTION = sqlite3.connect("FinanceDb")
 
     QUERY = "SELECT * FROM news WHERE symbol = '%(symbol)s'"
+    QUERY =  QUERY + TIME_FILTER
     DF_NEWS = pd.read_sql(QUERY % {"symbol":SYMBOL}, CONNECTION)
 
     # May need to bias the weight to better chart prices
@@ -34,6 +39,8 @@ if __name__ == "__main__":
     AX_NEWS.plot_date(DF_NEWS['time'], DF_NEWS['weight'], xdate=True, ydate=False, color='skyblue')
 
     QUERY = "SELECT * FROM prices WHERE symbol = '%(symbol)s'"
+    QUERY =  QUERY + TIME_FILTER
+
     DF = pd.read_sql(QUERY % {"symbol":SYMBOL}, CONNECTION)
 
     AX_PRICE = FIG.add_subplot(111)
