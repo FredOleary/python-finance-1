@@ -17,12 +17,15 @@ stock_data = [{"symbol": "INTC", "description": "Intel Corporation" },
 if __name__ == "__main__":
     print('Python', python_version())
     
-    symbol = "LITE"
+    symbol = "INTC"
     
     connnection = sqlite3.connect("FinanceDb")
  
     query = "SELECT * FROM news WHERE symbol = '%(symbol)s'"
     df_news = pd.read_sql( query % {"symbol":symbol}, connnection )  
+    
+    # May need to bias the weight to better chart prices
+    df_news['weight'] = df_news['weight'].apply(lambda x: x+53)
 
     x = df_news['time']
     y = df_news['weight']

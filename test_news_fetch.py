@@ -13,7 +13,8 @@ from datetime import datetime
 
 
 stock_data = [{"symbol": "INTC", "description": "Intel Corporation" },
-              {"symbol": "LITE", "description": "Lumentum Corporation" }]
+              {"symbol": "LITE", "description": "Lumentum Corporation" },
+              {"symbol": "MSFT", "description": "Microsoft Corporation" }]
 if __name__ == "__main__":
     print('Python', python_version())
     
@@ -21,7 +22,7 @@ if __name__ == "__main__":
     ts = now.timestamp()
     newNow = datetime.fromtimestamp(ts)
     
-    symbol = "INTC"
+    symbol = "MSFT"
     
     finance = FinanceDB(stock_data)
     finance.initialize()

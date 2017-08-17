@@ -7,26 +7,20 @@ Created on Mon Aug  7 17:04:10 2017
 """
 
 from platform import python_version
-import YahooFinanceNews  
+import YahooFinanceNews
 from DbFinance import FinanceDB
-from datetime import datetime  
 
 
-stock_data = [{"symbol": "INTC", "description": "Intel Corporation" },
-              {"symbol": "LITE", "description": "Lumentum Corporation" }]
+STOCK_DATA = [{"symbol": "INTC", "description": "Intel Corporation"},
+              {"symbol": "LITE", "description": "Lumentum Corporation"},
+              {"symbol": "MSFT", "description": "Microsoft Corporation"}]
+
 if __name__ == "__main__":
     print('Python', python_version())
-    
-    
-    symbol = "LITE"
-    
-    finance = FinanceDB(stock_data)
-    finance.initialize()
-    quotes = YahooFinanceNews.get_quotes_for_stock(symbol)
-    print( quotes )
-    finance.add_quotes( symbol, quotes)
-    
-    quotes =  finance.get_quotes( symbol)
-    print( quotes )
-    
-    
+    SYMBOL = "MSFT"
+    FINANCE = FinanceDB(STOCK_DATA)
+    FINANCE.initialize()
+    QUOTES = YahooFinanceNews.get_quotes_for_stock(SYMBOL)
+    # print( quotes )
+    FINANCE.add_quotes(SYMBOL, QUOTES)
+    QUOTES = FINANCE.get_quotes(SYMBOL)
