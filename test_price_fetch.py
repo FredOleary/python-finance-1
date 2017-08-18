@@ -21,4 +21,5 @@ if __name__ == "__main__":
     QUOTES = YahooFinanceNews.get_quotes_for_stock(SYMBOL)
     # print( quotes )
     FINANCE.add_quotes(SYMBOL, QUOTES)
+    FINANCE.close()
     QUOTES = FINANCE.get_quotes(SYMBOL)

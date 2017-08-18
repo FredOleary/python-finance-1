@@ -20,4 +20,5 @@ if __name__ == "__main__":
     FINANCE.initialize()
     NEWS = YahooFinanceNews.get_news_for_stock(SYMBOL)
     FINANCE.add_news(SYMBOL, NEWS)
+    FINANCE.close()
     print(NEWS)

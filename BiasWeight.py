@@ -27,7 +27,7 @@ class BiasWeights():
             cursor = self.connection.cursor()
             cursor.execute(update_sql, [weight, row[6]])
             cursor.close()
-            print(weight)
+            #print(weight)
         self.connection.commit()
 
     def _bias_weight(self, symbol, time, weight):
