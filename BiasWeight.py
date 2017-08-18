@@ -29,7 +29,7 @@ class BiasWeights():
             cursor.close()
             print(weight)
         self.connection.commit()
-        
+
     def _bias_weight(self, symbol, time, weight):
         """
         Bias the weight by the closest stock price.
