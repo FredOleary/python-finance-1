@@ -28,7 +28,7 @@ if __name__ == "__main__":
     DF_NEWS = pd.read_sql(QUERY % {"symbol":SYMBOL}, CONNECTION)
 
     # May need to bias the weight to better chart prices
-    DF_NEWS['weight'] = DF_NEWS['weight'].apply(lambda x: x+70)
+    #DF_NEWS['weight'] = DF_NEWS['weight'].apply(lambda x: x+70)
 
     FIG = plt.figure()
     FIG.suptitle('Scatter/Line Plot', fontsize=14, fontweight='bold')

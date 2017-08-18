@@ -17,13 +17,19 @@ class BiasWeights():
         cursor = self.connection.cursor()
         cursor.execute("SELECT * FROM news")
         rows = cursor.fetchall()
+        cursor.close()
         for row in rows:
             symbol = row[0]
             time = row[1]
-            weight = row[5]
-            weight = self._bias_weight(symbol, time, weight)
+            sentiment = 0   ## TODO Calculate sentiment!!
+            weight = self._bias_weight(symbol, time, sentiment)
+            update_sql = "UPDATE news SET weight = ? WHERE hash = ? "
+            cursor = self.connection.cursor()
+            cursor.execute(update_sql, [weight, row[6]])
+            cursor.close()
             print(weight)
-
+        self.connection.commit()
+        
     def _bias_weight(self, symbol, time, weight):
         """
         Bias the weight by the closest stock price.
