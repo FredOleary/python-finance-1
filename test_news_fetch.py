@@ -7,18 +7,20 @@ Created on Mon Aug  7 17:04:10 2017
 """
 
 from platform import python_version
-import YahooFinanceNews
 from DbFinance import FinanceDB
 from CompanyList import CompanyWatch
+from WebFinance import FinanceWeb
 
 
 if __name__ == "__main__":
     print('Python', python_version())
     COMPANIES = CompanyWatch()
-    SYMBOL = "MSFT"
+    SYMBOL = "LITE"
     FINANCE = FinanceDB(COMPANIES.get_companies())
     FINANCE.initialize()
-    NEWS = YahooFinanceNews.get_news_for_stock(SYMBOL)
+    WEB= FinanceWeb()
+    NEWS = WEB.get_news_for_stock(SYMBOL)
     FINANCE.add_news(SYMBOL, NEWS)
     FINANCE.close()
     print(NEWS)
+

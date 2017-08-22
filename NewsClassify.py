@@ -8,8 +8,8 @@ Created on Tue Aug  8 19:35:54 2017
 import re
 
 SPECIFIC_NEWS_MULTIPLIER = 10
-MAX_SENTIMENT = 100
-MIN_SENTIMENT = -100
+MAX_WEIGHT = 100
+MIN_WEIGHT = -100
 
 class ClassifyNews():
     """
@@ -37,11 +37,12 @@ class ClassifyNews():
     def _get_item_weight(self):
         multiplier = self._get_item_multiplier()
         sentiment = self._get_item_sentiment()
-        if sentiment > MAX_SENTIMENT:
-            sentiment = MAX_SENTIMENT
-        elif sentiment < MIN_SENTIMENT:
-            sentiment = MIN_SENTIMENT
-        return multiplier*sentiment
+        sentiment = multiplier*sentiment
+        if sentiment > MAX_WEIGHT:
+            sentiment = MAX_WEIGHT
+        elif sentiment < MIN_WEIGHT:
+            sentiment = MIN_WEIGHT
+        return sentiment
 
     # test if the news item explicity mentions the symbol
     def _get_item_multiplier(self):
@@ -57,7 +58,7 @@ class ClassifyNews():
     def _get_item_sentiment(self):
         sentiment = 0
         for negative in self.negative_terms:
-            regex = r'\b'+ negative + r'\b'
+            regex = self._create_reg_ex(negative)
             search_title = re.findall(regex, self.news_item["title"], re.I | re.X)
             search_description = re.findall(regex, self.news_item["description"], re.I | re.X)
             if search_title or search_description:
@@ -70,4 +71,14 @@ class ClassifyNews():
             if search_title or search_description:
                 sentiment = sentiment+1
 
-        return 0
+        return sentiment
+
+    def _create_reg_ex(self, term):
+        """ Create approbriate expression"""
+        tokens = term.split()
+        if len(tokens) > 1:
+            result = r''
+            for token in tokens:
+                result = result + token + r'\s'
+            return result
+        return r'\b'+ term + r'\b'

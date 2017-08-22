@@ -7,8 +7,9 @@ Created on Mon Aug  7 17:04:10 2017
 """
 
 import sqlite3
+import logging
 from platform import python_version
-import YahooFinanceNews
+from WebFinance import FinanceWeb
 from BiasWeight import BiasWeights
 from DbFinance import FinanceDB
 from CompanyList import CompanyWatch
@@ -16,19 +17,22 @@ from CompanyList import CompanyWatch
 
 if __name__ == "__main__":
     print('Python', python_version())
+    logging.basicConfig(filename='UpdateAll.log', level=logging.INFO)
+    logging.info('Python ' + python_version())
     COMPANIES = CompanyWatch()
+    WEB= FinanceWeb()
     FINANCE = FinanceDB(COMPANIES.get_companies())
     FINANCE.initialize()
     for COMPANY in COMPANIES.get_companies():
-        print("Updating: ", COMPANY["symbol"], " ", COMPANY["description"])
+        logging.info("Updating: " + COMPANY["symbol"] + " " + COMPANY["description"])
 
-        QUOTES = YahooFinanceNews.get_quotes_for_stock(COMPANY["symbol"])
+        QUOTES = WEB.get_quotes_for_stock(COMPANY["symbol"])
         FINANCE.add_quotes(COMPANY["symbol"], QUOTES)
-        print("Prices updated")
+        logging.info("Prices updated")
 
-        NEWS = YahooFinanceNews.get_news_for_stock(COMPANY["symbol"])
+        NEWS = WEB.get_news_for_stock(COMPANY["symbol"])
         FINANCE.add_news(COMPANY["symbol"], NEWS)
-        print("News updated")
+        logging.info("News updated")
 
     FINANCE.close()
 
@@ -36,6 +40,6 @@ if __name__ == "__main__":
     BIAS = BiasWeights(CONNECTION)
     BIAS.update_weights()
     CONNECTION.close()
-    print("Weights updated")
+    logging.info("Weights updated")
 
-    print("Done")
+    logging.info("Done")
