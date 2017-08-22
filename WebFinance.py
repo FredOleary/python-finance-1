@@ -10,9 +10,9 @@ Created on Thu Aug  3 11:15:04 2017
 
 import urllib.request
 import json
+import logging
 from datetime import datetime
 import demjson
-
 from dateutil import parser
 from tzlocal import get_localzone
 import pytz
@@ -64,4 +64,29 @@ class FinanceWeb():
                                  "source":item["s"], "time":dt_gmt})
 
         return news
-    
+
+    @classmethod
+    def get_news_for_stock_cf(cls, stock_ticker):
+        """ Return the list of news items for stock_ticker using City falcon """
+        news = []
+        url = "https://api.cityfalcon.com/v0.2/stories.json?identifier_type=tickers" +\
+            "&identifiers=" + stock_ticker + "&categories=mp%2Cop&order_by=top" +\
+            "&time_filter=d1&languages=en&all_languages=false" +\
+            "&access_token=8e02bc06e7d6c129f55d45253eb2240b275e66de8d8c959ad7b60bea9bad22f2"
+        try:
+            response = urllib.request.urlopen(url)
+            result = response.read()
+            str_result = result.decode("utf-8")
+
+            news_items = json.loads(str_result)
+            for news_item in news_items["stories"]:
+                dt_gmt = parser.parse(news_item["publishTime"])
+                dt_gmt = dt_gmt.replace(tzinfo=None)
+                news.append({"title":news_item["title"], "description":news_item["description"], \
+                             "source":news_item["source"]["name"], "time":dt_gmt})
+
+            return news
+        except urllib.error.HTTPError as err:
+            print("Exception ", err.code)
+            logging.error(err.code)
+            return news

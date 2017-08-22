@@ -7,7 +7,7 @@ Created on Fri Aug 11 10:26:16 2017
 """
 import urllib.request
 import json
-import ast
+import sys
 import feedparser
 import requests
 from html.parser import HTMLParser
@@ -15,7 +15,7 @@ import re
 import demjson
 from datetime import datetime
 from WebFinance import FinanceWeb
-
+from dateutil import parser
 ### alphavantage key M8KGCPCGZQSJJO3V
 
 """
@@ -68,10 +68,12 @@ class MyHTMLParser(HTMLParser):
         return self.news_results
 
 if __name__ == "__main__":
-    
+    dt_gmt = parser.parse("2017-08-21T20:03:23.000+00:00")
+    dt_gmt = dt_gmt.replace(tzinfo=None)     
     web = FinanceWeb()
-    news = web.get_news_for_stock("LITE")
-    print(news)
+    news = web.get_news_for_stock_cf("LITE")
+    print("News: ", news)
+    sys.exit()
     
     url = "https://www.google.com/finance/company_news?q=Nasdaq:MSFT&output=json"
     response = requests.get(url)
@@ -113,3 +115,4 @@ if __name__ == "__main__":
     print( str_result )
 
  
+    
