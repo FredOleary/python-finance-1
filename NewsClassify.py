@@ -6,6 +6,7 @@ Created on Tue Aug  8 19:35:54 2017
 @author: fredoleary
 """
 import re
+import NewsKeywords
 
 SPECIFIC_NEWS_MULTIPLIER = 10
 MAX_WEIGHT = 100
@@ -16,8 +17,7 @@ class ClassifyNews():
         Calculate the sentiment of the news_item
     """
     def __init__(self, symbol, name, newsItem):
-        self.negative_terms = ["struggling", "may be hurt"]
-        self.positive_terms = []
+        self.keywords = NewsKeywords.NewsKeywords().get_sentiment_dictionary()
         self.symbol = symbol
         self.name = name
         self.news_item = newsItem
@@ -57,19 +57,12 @@ class ClassifyNews():
 
     def _get_item_sentiment(self):
         sentiment = 0
-        for negative in self.negative_terms:
-            regex = self._create_reg_ex(negative)
+        for key, value in self.keywords.items():
+            regex = self._create_reg_ex(key)
             search_title = re.findall(regex, self.news_item["title"], re.I | re.X)
             search_description = re.findall(regex, self.news_item["description"], re.I | re.X)
             if search_title or search_description:
-                sentiment = sentiment-1
-
-        for positive in self.positive_terms:
-            regex = r'\b'+ positive + r'\b'
-            search_title = re.findall(regex, self.news_item["title"], re.I | re.X)
-            search_description = re.findall(regex, self.news_item["description"], re.I | re.X)
-            if search_title or search_description:
-                sentiment = sentiment+1
+                sentiment += value
 
         return sentiment
 

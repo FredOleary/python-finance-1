@@ -6,6 +6,7 @@ Created on Thu Aug 17 14:52:15 2017
 @author: fredoleary
 """
 from dateutil import parser
+import NewsClassify
 
 class BiasWeights():
     """ Update news weights for all news items """
@@ -21,13 +22,17 @@ class BiasWeights():
         for row in rows:
             symbol = row[0]
             time = row[1]
-            sentiment = 0   ## TODO Calculate sentiment!!
+            name = "xxx" #TODO
+            news_item = {"title":row[3], "description":row[4], "hash":row[7]}
+            classify_news = NewsClassify.ClassifyNews(symbol, name, news_item)
+            sentiment = classify_news.classify()
             weight = self._bias_weight(symbol, time, sentiment)
             update_sql = "UPDATE news SET weight = ? WHERE hash = ? "
             cursor = self.connection.cursor()
             cursor.execute(update_sql, [weight, row[7]])
             cursor.close()
-            #print(weight)
+            if sentiment != 0:
+                print("Found sentiment: ", sentiment, " title: ",row[3])
         self.connection.commit()
 
     def _bias_weight(self, symbol, time, weight):

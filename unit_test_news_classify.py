@@ -21,14 +21,14 @@ class SimplisticTest(unittest.TestCase):
         self.assertTrue(classify.classify() == 0)
 
 
-        # news item with symbol/description mention and negative phrase. "may be hurt"
+        # news item with symbol/description mention and negative word. "may be lowered"
         classify = ClassifyNews(symbol, description, {"title": \
-            "LITE may be hurt and Lumentum...", "description":  "LITE symbol and Lumentum name"})
+            "LITE lowered and Lumentum...", "description":  "LITE symbol and Lumentum name"})
         self.assertTrue(classify.classify() == -10)
 
-        # news item with no symbol/description mention and negative phrase. "may be hurt"
+        # news item with no symbol/description mention and negative word. "lowered"
         classify = ClassifyNews(symbol, description, {"title": \
-            "LITEX may be hurt and LumentumX...", "description":  "LITEX symbol and LumentumX name"})
+            "LITEX lowered and LumentumX...", "description":  "LITEX symbol and LumentumX name"})
         self.assertTrue(classify.classify() == -1)
 
         # news item with symbol/description mention but not positive or negative
@@ -40,6 +40,16 @@ class SimplisticTest(unittest.TestCase):
         classify = ClassifyNews(symbol, description, {"title": \
             "LITE symbol and Luxxxmentum name", "description":  "LITE symbol and Luxxxmentum name"})
         self.assertTrue(classify.classify() == 0)
+
+        # news item with symbol/description mention and positive word. "achieved"
+        classify = ClassifyNews(symbol, description, {"title": \
+            "LITE and Lumentum...", "description":  "LITE achieved and Lumentum name"})
+        self.assertTrue(classify.classify() == 10)
+
+        # news item with no symbol/description mention and positive word. "achieved"
+        classify = ClassifyNews(symbol, description, {"title": \
+            "LITEX  and LumentumX...", "description":  "LITEX achieved and LumentumX name"})
+        self.assertTrue(classify.classify() == 1)
 
 if __name__ == "__main__":
     print('Python', python_version())
