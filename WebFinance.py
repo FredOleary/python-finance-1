@@ -74,7 +74,10 @@ class FinanceWeb():
             "&time_filter=d1&languages=en&all_languages=false" +\
             "&access_token=8e02bc06e7d6c129f55d45253eb2240b275e66de8d8c959ad7b60bea9bad22f2"
         try:
-            response = urllib.request.urlopen(url)
+            req = urllib.request.Request(url)
+            req.add_header("user-agent","Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.90 Safari/537.36")
+            response = urllib.request.urlopen(req)
+#            response = urllib.request.urlopen(url)
             result = response.read()
             str_result = result.decode("utf-8")
 

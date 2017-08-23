@@ -7,6 +7,7 @@ Created on Tue Aug  8 19:35:54 2017
 """
 import sqlite3
 import hashlib
+import logging
 
 class FinanceDB():
     """ Storage for news/prices etc """
@@ -34,6 +35,7 @@ class FinanceDB():
                                         title TEXT NOT NULL,
                                         description TEXT NOT NULL,
                                         weight INTEGER NOT NULL,
+                                        aggregator TEXT,
                                         hash TEXT
                                     ); """}]
     def initialize(self):
@@ -70,7 +72,7 @@ class FinanceDB():
         cursor = self.connection.cursor()
         cursor.execute("SELECT * FROM prices WHERE symbol = ?", [symbol])
         return cursor.fetchall()
-    def add_news(self, symbol, news_list):
+    def add_news(self, symbol, news_list, aggregator):
         """ Added list of news items to the database """
         if news_list:
             for news in news_list:
@@ -78,25 +80,34 @@ class FinanceDB():
                 if news_hash:
                     #print("Adding news item to database")
                     cursor = self.connection.cursor()
-                    cursor.execute("INSERT INTO news VALUES (?,?,?,?,?,?, ?)", [symbol,\
+                    cursor.execute("INSERT INTO news VALUES (?,?,?,?,?,?,?,?)", [symbol,\
                                news["time"], \
                                news["source"], \
                                news["title"], \
                                news["description"], \
                                0, \
+                               aggregator, \
                                news_hash])
                     self.connection.commit()
     def _news_already_added(self, symbol, news):
-        blake_hash = hashlib.blake2b()
-        blake_hash.update(news["description"].encode())
-        news_hash = blake_hash.hexdigest()
-        cursor = self.connection.cursor()
-        cursor.execute("SELECT * FROM news WHERE symbol = ? AND  hash = ? ", [symbol, news_hash])
-        rows = cursor.fetchall()
-        if rows:
-            #print("News item already exists in database")
+        try:
+            blake_hash = hashlib.blake2b()
+            if news["description"] is not None:
+                blake_hash.update(news["description"].encode())
+                news_hash = blake_hash.hexdigest()
+                cursor = self.connection.cursor()
+                cursor.execute("SELECT * FROM news WHERE symbol = ? AND  hash = ? ", [symbol, news_hash])
+                rows = cursor.fetchall()
+                if rows:
+                    #print("News item already exists in database")
+                    return None
+                return news_hash
+            else:
+                return None
+        except:
+            logging.error(" failed to hash...")
             return None
-        return news_hash
+
     def _create_verify_tables(self):
         #Get a list of all tables
         cursor = self.connection.cursor()

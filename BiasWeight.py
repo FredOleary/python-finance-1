@@ -25,7 +25,7 @@ class BiasWeights():
             weight = self._bias_weight(symbol, time, sentiment)
             update_sql = "UPDATE news SET weight = ? WHERE hash = ? "
             cursor = self.connection.cursor()
-            cursor.execute(update_sql, [weight, row[6]])
+            cursor.execute(update_sql, [weight, row[7]])
             cursor.close()
             #print(weight)
         self.connection.commit()

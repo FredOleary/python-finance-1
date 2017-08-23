@@ -31,8 +31,12 @@ if __name__ == "__main__":
         logging.info("Prices updated")
 
         NEWS = WEB.get_news_for_stock(COMPANY["symbol"])
-        FINANCE.add_news(COMPANY["symbol"], NEWS)
-        logging.info("News updated")
+        FINANCE.add_news(COMPANY["symbol"], NEWS, "Google")
+        logging.info("News updated - Google aggregator")
+        
+        NEWS = WEB.get_news_for_stock_cf(COMPANY["symbol"])
+        FINANCE.add_news(COMPANY["symbol"], NEWS, "City Falcon")
+        logging.info("News updated - cityFalcon aggregator")
 
     FINANCE.close()
 
@@ -43,3 +47,4 @@ if __name__ == "__main__":
     logging.info("Weights updated")
 
     logging.info("Done")
+    print("Done")
