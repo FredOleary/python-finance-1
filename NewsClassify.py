@@ -8,7 +8,8 @@ Created on Tue Aug  8 19:35:54 2017
 import re
 import NewsKeywords
 
-SPECIFIC_NEWS_MULTIPLIER = 10
+SPECIFIC_NEWS_MULTIPLIER = 2
+SENTIMENT_SCALER = .3
 MAX_WEIGHT = 100
 MIN_WEIGHT = -100
 
@@ -36,8 +37,10 @@ class ClassifyNews():
 
     def _get_item_weight(self):
         multiplier = self._get_item_multiplier()
-        sentiment = self._get_item_sentiment()
+        sentiment = self._get_item_sentiment() * SENTIMENT_SCALER
         sentiment = multiplier*sentiment
+        if sentiment != 0:
+            print(sentiment, " ", self.news_item["title"])
         if sentiment > MAX_WEIGHT:
             sentiment = MAX_WEIGHT
         elif sentiment < MIN_WEIGHT:

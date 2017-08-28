@@ -19,7 +19,7 @@ if __name__ == "__main__":
     
     # optional time filter - Use "" for none
     #TIME_FILTER =  "AND time BETWEEN '2017-08-11 18:57:00' AND '2017-08-11 19:05:00'")
-    TIME_FILTER =  " AND time > '2017-08-17 00:00:00'"
+    TIME_FILTER =  " AND time > '2017-08-23 12:00:00'"
 
     CONNECTION = sqlite3.connect("FinanceDb")
 
