@@ -36,7 +36,8 @@ class FinanceDB():
                                         description TEXT NOT NULL,
                                         weight INTEGER NOT NULL,
                                         aggregator TEXT,
-                                        hash TEXT
+                                        hash TEXT,
+                                        sentiment TEXT
                                     ); """}]
     def initialize(self):
         """ Initialize database connection and tables """
@@ -67,6 +68,27 @@ class FinanceDB():
                 pass
                 #print("value already added for time: ", quote["time"])
 
+    def get_without_sentiment(self):
+        cursor = self.connection.cursor()
+        cursor.execute("SELECT * FROM news WHERE sentiment IS NULL")
+        rows = cursor.fetchall()
+        return rows
+
+
+    def get_news_with_sentiment(self):
+        cursor = self.connection.cursor()
+        cursor.execute("SELECT * FROM news WHERE sentiment IS NOT NULL")
+        rows = cursor.fetchall()
+        return rows
+
+
+    def update_sentiment( self, hash, sentiment):
+        update_sql = "UPDATE news SET sentiment = ? WHERE hash = ? "
+        cursor = self.connection.cursor()
+        cursor.execute(update_sql, [sentiment, hash])
+        cursor.close()
+        self.connection.commit()
+        
     def get_quotes(self, symbol):
         """ Fetch prices for symbol """
         cursor = self.connection.cursor()
@@ -80,14 +102,15 @@ class FinanceDB():
                 if news_hash:
                     #print("Adding news item to database")
                     cursor = self.connection.cursor()
-                    cursor.execute("INSERT INTO news VALUES (?,?,?,?,?,?,?,?)", [symbol,\
+                    cursor.execute("INSERT INTO news VALUES (?,?,?,?,?,?,?,?,?)", [symbol,\
                                news["time"], \
                                news["source"], \
                                news["title"], \
                                news["description"], \
                                0, \
                                aggregator, \
-                               news_hash])
+                               news_hash,
+                               None])
                     self.connection.commit()
     def _news_already_added(self, symbol, news):
         try:
