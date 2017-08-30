@@ -18,16 +18,17 @@ from CompanyList import CompanyWatch
 import matplotlib.pyplot as plt
 from matplotlib.collections import LineCollection
 
-def get_x_sets(finance):
+def get_x_sets(finance, percent_train):
     """ Get rows where sentiment has not been set """
     _texts = []
+    _news = []
+    _sentiments = []
     _x_train_set = []
     _x_test_set = []
     _y_train_set = []
     _y_test_set = []
 
     rows = finance.get_news_with_sentiment()
-    row_num = 0
     for row in rows:
         sentiment = row[8]
         _texts.append( row[4])
@@ -37,19 +38,18 @@ def get_x_sets(finance):
                 sentiment_num = 2
             elif sentiment == "B":
                 sentiment_num = 0
+            _news.append(row[4]) 
+            _sentiments.append(sentiment_num)
 
-            if row_num % 2 == 0:
-                _x_train_set.append(row[4])
-                _y_train_set.append(sentiment_num)
-            else:
-                _x_test_set.append( row[4])
-                _y_test_set.append(sentiment_num)
-           
-        row_num += 1
+    train_count = int((percent_train * len(_news))/100)
+    _x_train_set = _news[:train_count]
+    _y_train_set = _sentiments[:train_count]
+    _x_test_set = _news[train_count:]
+    _y_test_set = _sentiments[train_count:]
         
     return _texts, _x_train_set, _x_test_set, _y_train_set, _y_test_set
 
-class my_callback(Callback):
+class my_chart(Callback):
     def __init__(self, num_epochs):
         plt.ion()
         self.num_epochs = num_epochs
@@ -110,14 +110,14 @@ if __name__ == "__main__":
     COMPANIES = CompanyWatch()
     FINANCE = FinanceDB(COMPANIES.get_companies())
     FINANCE.initialize()
+    percent_train = 80
  
-    texts, x_train_set, x_test_set, y_train_set, y_test_set = get_x_sets(FINANCE)
+    texts, x_train_set, x_test_set, y_train_set, y_test_set = get_x_sets(FINANCE, percent_train)
     
     max_features = 20000
     batch_size = 32
     maxlen = 100
     num_epochs = 50
-
        
     nb_words = 1000
     tokenizer = preproc.Tokenizer(num_words=nb_words)
@@ -151,7 +151,7 @@ if __name__ == "__main__":
     model.compile('adam', 'binary_crossentropy', metrics=['accuracy'])
     
     print('Train...')
-    history = model.fit(x_train, y_train, batch_size=batch_size, epochs=num_epochs, validation_data=[x_test, y_test], callbacks=[my_callback(num_epochs)])
+    history = model.fit(x_train, y_train, batch_size=batch_size, epochs=num_epochs, validation_data=[x_test, y_test], callbacks=[my_chart(num_epochs)])
     
     predict_train = np.around(model.predict(x_train[:2]))
     predict_test = np.around(model.predict(x_test[:2]))
