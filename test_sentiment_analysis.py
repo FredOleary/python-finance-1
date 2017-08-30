@@ -60,7 +60,6 @@ class my_callback(Callback):
         self.train_loss=[]
         self.validation_accuracy=[]
         self.validation_loss=[]
-        self.colors = ['blue', 'red', 'green', 'brown']
         
     def create_segments( self ):
         graph_len = len(self.train_accuracy) # number of epochs so far
@@ -77,15 +76,20 @@ class my_callback(Callback):
         for index in range(graph_len):
             segs[3, index, 1] = self.validation_loss[index]
             
-        return segs
+        return segs[0], segs[1], segs[2], segs[3]
 
-    def update( self, segs ):
+    def update( self, seg0, seg1, seg2, seg3 ):
      
-        line_segments = LineCollection(segs, linewidths=(1, 1, 1, 1),
-                                   colors= self.colors, linestyle='solid')
-        self.ax.legend([line_segments], ['Train acc', 'Train loss', 'Val acc', 'Val loss'])
-        self.ax.add_collection(line_segments)
-        plt.legend(loc='upper left')
+        lc0 = LineCollection([seg0], linewidths=(1), colors= ['blue'], linestyle='solid')
+        lc1 = LineCollection([seg1], linewidths=(1), colors= ['red'], linestyle='solid')
+        lc2 = LineCollection([seg2], linewidths=(1), colors= ['green'], linestyle='solid')
+        lc3 = LineCollection([seg3], linewidths=(1), colors= ['brown'], linestyle='solid')
+
+        self.ax.legend([lc0, lc1, lc2, lc3], ['Train acc', 'Train loss', 'Val acc', 'Val loss'], loc='upper left')
+        self.ax.add_collection(lc0)
+        self.ax.add_collection(lc1)
+        self.ax.add_collection(lc2)
+        self.ax.add_collection(lc3)
         plt.pause(.1)
 
     def on_epoch_end(self, epoch, logs):
@@ -95,8 +99,8 @@ class my_callback(Callback):
         self.train_loss.append( logs["loss"])
         self.validation_accuracy.append( logs["val_acc"])
         self.validation_loss.append( logs["val_loss"])
-        segs = self.create_segments()
-        self.update(segs)
+        seg0, seg1, seg2, seg3 = self.create_segments()
+        self.update(seg0, seg1, seg2, seg3)
     
     
 
