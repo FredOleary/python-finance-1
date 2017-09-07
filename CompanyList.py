@@ -11,6 +11,7 @@ class CompanyWatch():
     def __init__(self):
         self.company_list = [{"symbol": "INTC", "description": "Intel Corporation"},
                              {"symbol": "LITE", "description": "Lumentum Corporation"},
+                             {"symbol": "AAPL", "description": "Apple Corporation"},
                              {"symbol": "MSFT", "description": "Microsoft Corporation"}]
     def get_companies(self):
         """ Returns the companies """
