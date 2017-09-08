@@ -7,12 +7,10 @@ Created on Fri Aug 25 10:31:22 2017
 """
 import numpy as np
 import html
+import sys
 from platform import python_version
-import keras.preprocessing.text as preproc
-from keras.preprocessing import sequence
 from keras.models import Sequential
-from keras.layers import Dense, Dropout, Embedding, LSTM, Bidirectional, Activation
-
+from keras.layers import Embedding
 from keras.callbacks import Callback
 from DbFinance import FinanceDB
 from CompanyList import CompanyWatch
@@ -21,7 +19,7 @@ from KerasModels import ModelLSTM, ModelMLP
 import matplotlib.pyplot as plt
 from matplotlib.collections import LineCollection
 
-def get_x_sets(finance, percent_train):
+def get_x_sets(finance, pcnt_train):
     """ Get rows where sentiment has not been set """
     _texts = []
     _news = []
@@ -45,7 +43,7 @@ def get_x_sets(finance, percent_train):
             _news.append(news) 
             _sentiments.append(sentiment_num)
 
-    train_count = int((percent_train * len(_news))/100)
+    train_count = int((pcnt_train * len(_news))/100)
     _x_train_set = _news[:train_count]
     _y_train_set = _sentiments[:train_count]
     _x_test_set = _news[train_count:]
@@ -67,11 +65,12 @@ def test__embedding():
     assert output_array.shape == (32, 10, 64)
 
 class my_chart(Callback):
-    def __init__(self, num_epochs):
+    def __init__(self, no_epochs):
+        super().__init__() 
         plt.ion()
-        self.num_epochs = num_epochs
+        self.num_epochs = no_epochs
         self.ax = plt.axes()
-        self.ax.set_xlim(0, num_epochs)
+        self.ax.set_xlim(0, no_epochs)
         self.ax.set_ylim(0, 3)
         self.train_accuracy=[]
         self.train_loss=[]
@@ -109,15 +108,16 @@ class my_chart(Callback):
         self.ax.add_collection(lc3)
         plt.pause(.1)
 
-    def on_epoch_end(self, epoch, logs):
+    def on_epoch_end(self, epoch, logs=None):
         #update accuracy/loss
         # segs = self.create_segments()
-        self.train_accuracy.append( logs["acc"])
-        self.train_loss.append( logs["loss"])
-        self.validation_accuracy.append( logs["val_acc"])
-        self.validation_loss.append( logs["val_loss"])
-        seg0, seg1, seg2, seg3 = self.create_segments()
-        self.update(seg0, seg1, seg2, seg3)
+        if logs is not None:
+            self.train_accuracy.append( logs["acc"])
+            self.train_loss.append( logs["loss"])
+            self.validation_accuracy.append( logs["val_acc"])
+            self.validation_loss.append( logs["val_loss"])
+            seg0, seg1, seg2, seg3 = self.create_segments()
+            self.update(seg0, seg1, seg2, seg3)
     
 if __name__ == "__main__":
     print('Python', python_version())
@@ -126,7 +126,11 @@ if __name__ == "__main__":
     COMPANIES = CompanyWatch()
     FINANCE = FinanceDB(COMPANIES.get_companies())
     FINANCE.initialize()
-    percent_train = 50
+    if len(sys.argv) > 1:
+        percent_train = int(sys.argv[1])
+    else:
+        percent_train = 50
+        
     num_epochs = 50
  
     texts, x_train_set, x_test_set, y_train_set, y_test_set = get_x_sets(FINANCE, percent_train)
@@ -135,7 +139,7 @@ if __name__ == "__main__":
     
     lstm_model, x_train, x_test, y_train, y_test = model_LSTM.create_model(texts, x_train_set, x_test_set, y_train_set, y_test_set)
     
-    print('Train...')
+    print('Train... Percent train = ', percent_train, '%')
     history = model_LSTM.train_model( num_epochs, my_chart(num_epochs))
     
     predict_train = np.around(lstm_model.predict(x_train[:2]))
