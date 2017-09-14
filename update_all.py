@@ -8,6 +8,7 @@ Created on Mon Aug  7 17:04:10 2017
 
 import sqlite3
 import logging
+import datetime
 from platform import python_version
 from WebFinance import FinanceWeb
 from BiasWeight import BiasWeights
@@ -16,9 +17,10 @@ from CompanyList import CompanyWatch
 
 
 if __name__ == "__main__":
-    print('Python', python_version())
+    nowdt =  datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    print('Python', python_version(), ' ', nowdt)
     logging.basicConfig(filename='UpdateAll.log', level=logging.INFO)
-    logging.info('Python ' + python_version())
+    logging.info('Pythonx ' + python_version() + ' ' + nowdt)
     COMPANIES = CompanyWatch()
     WEB= FinanceWeb()
     FINANCE = FinanceDB(COMPANIES.get_companies())

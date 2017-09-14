@@ -30,16 +30,19 @@ class FinanceWeb():
         result = response.read()
         str_result = result.decode("utf-8")
         python_obj = json.loads(str_result)
-        for key, value in python_obj["Time Series (1min)"].items():
-            # The date/times are EST, convert to GMT and remove Tz info.
-            # (sqlite doesn't like tz info)
-            dt_est = parser.parse(key)  # Date time with no TZ info
-            dt_est = pytz.timezone('US/Eastern').localize(dt_est) # Date time with EST info
-            dt_gmt = dt_est.astimezone(pytz.utc) # Date time with as GMT
-            dt_gmt = dt_gmt.replace(tzinfo=None) # GM time with tz info stripped
-            quotes.append({"time": dt_gmt, "price":value["4. close"]})
+        if "Time Series (1min)" in python_obj:
+            for key, value in python_obj["Time Series (1min)"].items():
+                # The date/times are EST, convert to GMT and remove Tz info.
+                # (sqlite doesn't like tz info)
+                dt_est = parser.parse(key)  # Date time with no TZ info
+                dt_est = pytz.timezone('US/Eastern').localize(dt_est) # Date time with EST info
+                dt_gmt = dt_est.astimezone(pytz.utc) # Date time with as GMT
+                dt_gmt = dt_gmt.replace(tzinfo=None) # GM time with tz info stripped
+                quotes.append({"time": dt_gmt, "price":value["4. close"]})
+        else:
+            logging.error("Cannot get quotes for: " + stock_ticker)
         return quotes
-
+    
     @classmethod
     def get_news_for_stock(cls, stock_ticker):
         """ Return the list of news items for stock_ticker using Googles Finance """

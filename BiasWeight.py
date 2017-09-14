@@ -7,6 +7,7 @@ Created on Thu Aug 17 14:52:15 2017
 """
 from dateutil import parser
 import NewsClassify
+import html
 
 class BiasWeights():
     """ Update news weights for all news items """
@@ -32,7 +33,7 @@ class BiasWeights():
             cursor.execute(update_sql, [weight, row[7]])
             cursor.close()
             if sentiment != 0:
-                print("Found sentiment: ", sentiment, " title: ",row[3])
+                print("Found sentiment: ", sentiment, " title: ", html.unescape(row[3]))
         self.connection.commit()
 
     def _bias_weight(self, symbol, time, weight):
