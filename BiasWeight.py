@@ -32,8 +32,8 @@ class BiasWeights():
             cursor = self.connection.cursor()
             cursor.execute(update_sql, [weight, row[7]])
             cursor.close()
-            if sentiment != 0:
-                print("Found sentiment: ", sentiment, " title: ", html.unescape(row[3]))
+#            if sentiment != 0:
+#                print("Found sentiment: ", sentiment, " title: ", html.unescape(row[3]))
         self.connection.commit()
 
     def _bias_weight(self, symbol, time, weight):

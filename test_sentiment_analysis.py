@@ -8,6 +8,7 @@ Created on Fri Aug 25 10:31:22 2017
 import numpy as np
 import html
 import sys
+import argparse
 from platform import python_version
 from keras.models import Sequential
 from keras.layers import Embedding
@@ -121,21 +122,28 @@ class my_chart(Callback):
     
 if __name__ == "__main__":
     print('Python', python_version())
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-t", "--train", help="Training percentage, (Default=50 percent)", dest="training", default=50, type=int)
+    parser.add_argument("-m", "--model", help="ANN Model, (LSTM, MLP, Default=MLP)", dest="model", default="MLP")
+    parser.add_argument("-e", "--epochs", help="Number of epochs, (Default=50)", dest="epochs", default=50, type=int)
+    args = parser.parse_args()
+    print("training: ", args.training, " Model: ", args.model, " Epochs: ", args.epochs)
+
+    model = "MLP"
     #test__embedding()
     
     COMPANIES = CompanyWatch()
     FINANCE = FinanceDB(COMPANIES.get_companies())
     FINANCE.initialize()
-    if len(sys.argv) > 1:
-        percent_train = int(sys.argv[1])
-    else:
-        percent_train = 50
-        
-    num_epochs = 50
+    percent_train = args.training
+    num_epochs = args.epochs
  
     texts, x_train_set, x_test_set, y_train_set, y_test_set = get_x_sets(FINANCE, percent_train)
-#    model_LSTM = ModelLSTM(20000, 32, 100,1000 )
-    model_LSTM = ModelMLP(20000, 32, 100,1000 )
+    if args.model == "MLP":
+        model_LSTM = ModelMLP(20000, 32, 100,1000 )
+    else:
+        model_LSTM = ModelLSTM(20000, 32, 100,1000 )
+       
     
     lstm_model, x_train, x_test, y_train, y_test = model_LSTM.create_model(texts, x_train_set, x_test_set, y_train_set, y_test_set)
     

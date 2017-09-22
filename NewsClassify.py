@@ -7,7 +7,8 @@ Created on Tue Aug  8 19:35:54 2017
 """
 import re
 import NewsKeywords
-import html
+
+
 
 SPECIFIC_NEWS_MULTIPLIER = 2
 SENTIMENT_SCALER = .3
@@ -40,8 +41,8 @@ class ClassifyNews():
         multiplier = self._get_item_multiplier()
         sentiment = self._get_item_sentiment() * SENTIMENT_SCALER
         sentiment = multiplier*sentiment
-        if sentiment != 0:
-            print(sentiment, " ", html.unescape(self.news_item["title"]))
+#        if sentiment != 0:
+#            print(sentiment, " ", html.unescape(self.news_item["title"]))
         if sentiment > MAX_WEIGHT:
             sentiment = MAX_WEIGHT
         elif sentiment < MIN_WEIGHT:
