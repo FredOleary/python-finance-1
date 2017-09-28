@@ -7,8 +7,8 @@ Created on Fri Aug 25 10:31:22 2017
 """
 import numpy as np
 import html
-import sys
 import argparse
+import re
 from platform import python_version
 from keras.models import Sequential
 from keras.layers import Embedding
@@ -33,7 +33,7 @@ def get_x_sets(finance, pcnt_train):
     rows = finance.get_news_with_sentiment()
     for row in rows:
         sentiment = row[8]
-        news = html.unescape(row[3]) + ". " + html.unescape(row[4])
+        news = prepare_text(row, finance.get_stock_data())
         _texts.append(news)
         if sentiment != "I":
             sentiment_num = 1
@@ -51,6 +51,25 @@ def get_x_sets(finance, pcnt_train):
     _y_test_set = _sentiments[train_count:]
         
     return _texts, _x_train_set, _x_test_set, _y_train_set, _y_test_set
+
+def prepare_text(row, stock_data):
+    symbol = row[0]
+    name = "XXX"    ## Note name lookup is not optimal here!!!
+    for stock in stock_data:
+        if stock["symbol"] == symbol:
+            name = stock["name"]
+            break
+        
+    news = html.unescape(row[3]) + ". " + html.unescape(row[4])
+    regex = r'\b'+ symbol + r'\b|\b' + name + r'\b'
+#    search_results = re.findall(regex, news, re.I | re.X)
+#    if search_results:
+#        print("ok")
+#   Uncomment the line below to replace company specific symbol/name with the generic "COMPANY"
+#   The concept here is that good news for MSFT has similar patterns as good news for AAPL or INTC    
+#    news = re.sub(regex, "COMPANY", news, re.I | re.X)
+#    print(news)
+    return news
 
 def test__embedding():
     model = Sequential()
@@ -126,8 +145,9 @@ if __name__ == "__main__":
     parser.add_argument("-t", "--train", help="Training percentage, (Default=50 percent)", dest="training", default=50, type=int)
     parser.add_argument("-m", "--model", help="ANN Model, (LSTM, MLP, Default=MLP)", dest="model", default="MLP")
     parser.add_argument("-e", "--epochs", help="Number of epochs, (Default=50)", dest="epochs", default=50, type=int)
+    parser.add_argument("-f", "--features", help="Max features, (Default=20000)", dest="max_features", default=20000, type=int)
     args = parser.parse_args()
-    print("training: ", args.training, " Model: ", args.model, " Epochs: ", args.epochs)
+    print("training: ", args.training, ". Model: ", args.model, ". Epochs: ", args.epochs, ". max_features: ", args.max_features)
 
     model = "MLP"
     #test__embedding()
@@ -137,12 +157,13 @@ if __name__ == "__main__":
     FINANCE.initialize()
     percent_train = args.training
     num_epochs = args.epochs
+    max_features = args.max_features
  
     texts, x_train_set, x_test_set, y_train_set, y_test_set = get_x_sets(FINANCE, percent_train)
     if args.model == "MLP":
-        model_LSTM = ModelMLP(20000, 32, 100,1000 )
+        model_LSTM = ModelMLP(max_features, 32, 100,1000 )
     else:
-        model_LSTM = ModelLSTM(20000, 32, 100,1000 )
+        model_LSTM = ModelLSTM(max_features, 32, 100,1000 )
        
     
     lstm_model, x_train, x_test, y_train, y_test = model_LSTM.create_model(texts, x_train_set, x_test_set, y_train_set, y_test_set)

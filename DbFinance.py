@@ -19,6 +19,7 @@ class FinanceDB():
                         "create_sql": """ CREATE TABLE IF NOT EXISTS stocks (
                                         symbol TEXT PRIMARY KEY,
                                         description TEXT,
+                                        name TEXT NOT NULL
                                     ); """}, \
                        {"name" :"prices",
                         "create_sql": """ CREATE TABLE IF NOT EXISTS prices (
@@ -50,6 +51,9 @@ class FinanceDB():
         """ Close db if necessary """
         if self.connection is not None:
             self.connection.close()
+
+    def get_stock_data(self):
+        return self.stock_data
 
     def add_quotes(self, symbol, quotes):
         """ Add prices for symbol to database """
@@ -147,7 +151,7 @@ class FinanceDB():
             cursor.execute("SELECT * FROM stocks WHERE symbol = ?", [stock["symbol"]])
             rows = cursor.fetchall()
             if not rows: #empty - record does not exist
-                cursor.execute("INSERT INTO stocks VALUES (?,?)",\
-                               [stock["symbol"], stock["description"]])
+                cursor.execute("INSERT INTO stocks VALUES (?,?,?)",\
+                               [stock["symbol"], stock["description"], stock["name"]])
                 self.connection.commit()
         return

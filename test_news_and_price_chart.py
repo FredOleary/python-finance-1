@@ -8,18 +8,24 @@ Created on Mon Aug  7 17:04:10 2017
 
 from platform import python_version
 import sqlite3
+import argparse
 
 import matplotlib.pyplot as plt
 import pandas as pd
 
 if __name__ == "__main__":
     print('Python', python_version())
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-t", "--ticker", help="Ticker to chart, (MSFT, AAPL..., Default=MSFT)", dest="ticker", default="MSFT")
+    args = parser.parse_args()
+    print("Ticker: ", args.ticker)
 
-    SYMBOL = "AAPL"
+    SYMBOL = args.ticker
     
     # optional time filter - Use "" for none
-    #TIME_FILTER =  "AND time BETWEEN '2017-08-11 18:57:00' AND '2017-08-11 19:05:00'")
-    TIME_FILTER =  " AND time > '2017-09-19 12:00:00'"
+    # Also 6:30am PST is 1:30pm GMT, (13:30:00) and 1:00pm PST is 8pm GMT (20:00:00)
+    TIME_FILTER =  "AND time BETWEEN '2017-09-26 13:30:00' AND '2017-09-26 20:00:00'"
+#    TIME_FILTER =  " AND time > '2017-09-26 13:30:00'"
 
     CONNECTION = sqlite3.connect("FinanceDb")
 
@@ -53,5 +59,5 @@ if __name__ == "__main__":
     AX_PRICE.plot_date(DF['time'], DF['price'], 'b-', xdate=True, ydate=False, color='red')
 
     FIG.autofmt_xdate()
-
+    plt.axis('tight')
     plt.show()
