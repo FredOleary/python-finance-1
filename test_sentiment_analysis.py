@@ -35,14 +35,20 @@ def get_x_sets(finance, pcnt_train):
         sentiment = row[8]
         news = prepare_text(row, finance.get_stock_data())
         _texts.append(news)
-        if sentiment != "I":
+        # Sentinment Ignore = 0, Bad = 1, Neutral =2, Good =3
+        sentiment_num = 0
+        if sentiment== "G":
+            sentiment_num = 3
+        elif sentiment == "B":
             sentiment_num = 1
-            if sentiment== "G":
-                sentiment_num = 2
-            elif sentiment == "B":
-                sentiment_num = 0
-            _news.append(news) 
-            _sentiments.append(sentiment_num)
+        elif sentiment == "N":
+            sentiment_num = 2
+        elif sentiment == "I":
+            sentiment_num = 0
+        else:
+            print( "bad sentiment: ",sentiment)
+        _news.append(news) 
+        _sentiments.append(sentiment_num)
 
     train_count = int((pcnt_train * len(_news))/100)
     _x_train_set = _news[:train_count]
@@ -71,6 +77,35 @@ def prepare_text(row, stock_data):
 #    print(news)
     return news
 
+def update_sentiment(finance, rows, predict):
+    print("Records:", len(rows))
+    row_index = 0;
+    for row in rows:
+        choice_made = False
+        while choice_made is False:
+            print("----------------------------------------")
+            print("Source: ", row[2],". Date: ", row[1], ". Title: ", html.unescape(row[3]))
+            print("\nDescription: ", html.unescape(row[4]))
+            choice = 'X'
+            if predict[row_index][0] == 1:
+                choice = 'I'
+            elif predict[row_index][1] == 1:
+                choice = 'B'
+            elif predict[row_index][2] == 1:
+                choice = 'N'
+            elif predict[row_index][3] == 1:
+                choice = 'G'
+            message = "Sentiment: 'G=Good/Positive', 'B=Bad/Negative', 'N=Neutral', 'I=Ingore':" + choice    
+            sentiment = input(message).upper()
+            if len(sentiment) > 0:
+                choice = sentiment[0]
+            if choice == "G" or choice == "B" or choice == "N" or choice == "I":
+                choice_made = True
+                finance.update_sentiment(row[7], choice)
+            else:
+                print("Invalid choice")
+        row_index += 1
+        
 def test__embedding():
     model = Sequential()
     model.add(Embedding(1000, 64, input_length=10))
@@ -146,8 +181,9 @@ if __name__ == "__main__":
     parser.add_argument("-m", "--model", help="ANN Model, (LSTM, MLP, Default=MLP)", dest="model", default="MLP")
     parser.add_argument("-e", "--epochs", help="Number of epochs, (Default=50)", dest="epochs", default=50, type=int)
     parser.add_argument("-f", "--features", help="Max features, (Default=20000)", dest="max_features", default=20000, type=int)
+    parser.add_argument("-p", "--predict", help="Predict new sentiment, (Default=false)", dest="predict_new", default="F")
     args = parser.parse_args()
-    print("training: ", args.training, ". Model: ", args.model, ". Epochs: ", args.epochs, ". max_features: ", args.max_features)
+    print("training: ", args.training, ". Model: ", args.model, ". Epochs: ", args.epochs, ". max_features: ", args.max_features, ". Predice new news: ", args.predict_new)
 
     model = "MLP"
     #test__embedding()
@@ -180,4 +216,14 @@ if __name__ == "__main__":
         if (predict_test_all[i] == y_test[i]).all():
             accuracy += 1
     print("done-accuracy:" , (accuracy/len(y_test))*100, "%")
+    if args.predict_new == 'T':
+        rows = FINANCE.get_without_sentiment()
+        new_news = []
+        for row in rows:
+            news = prepare_text(row, FINANCE.get_stock_data())
+            new_news.append(news) 
+        x_set = model_LSTM.prepare_x_set(new_news)
+        new_predict = np.around(lstm_model.predict(x_set))
+        update_sentiment(FINANCE, rows, new_predict)
+
     input("Done-press enter to exit")
