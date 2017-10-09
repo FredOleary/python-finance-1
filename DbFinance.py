@@ -85,6 +85,19 @@ class FinanceDB():
         rows = cursor.fetchall()
         return rows
 
+    def get_prices_before(self, symbol, time):
+        query = "SELECT * FROM prices WHERE symbol = ? AND time <= ? ORDER BY TIME DESC LIMIT 5"
+        cursor = self.connection.cursor()
+        cursor.execute(query, [symbol, time])
+        rows = cursor.fetchall()
+        return rows
+
+    def get_prices_after(self, symbol, time):
+        query = "SELECT * FROM prices WHERE symbol = ? AND time >= ? ORDER BY TIME ASC LIMIT 5"
+        cursor = self.connection.cursor()
+        cursor.execute(query, [symbol, time])
+        rows = cursor.fetchall()
+        return rows
 
     def update_sentiment( self, hash, sentiment):
         update_sql = "UPDATE news SET sentiment = ? WHERE hash = ? "

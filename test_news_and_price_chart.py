@@ -24,12 +24,12 @@ if __name__ == "__main__":
     
     # optional time filter - Use "" for none
     # Also 6:30am PST is 1:30pm GMT, (13:30:00) and 1:00pm PST is 8pm GMT (20:00:00)
-    TIME_FILTER =  "AND time BETWEEN '2017-09-26 13:30:00' AND '2017-09-26 20:00:00'"
-#    TIME_FILTER =  " AND time > '2017-09-26 13:30:00'"
+#    TIME_FILTER =  "AND time BETWEEN '2017-09-26 13:30:00' AND '2017-09-26 20:00:00'"
+    TIME_FILTER =  " AND time > '2017-09-26 13:30:00'"
 
     CONNECTION = sqlite3.connect("FinanceDb")
 
-    QUERY = "SELECT * FROM news WHERE symbol = '%(symbol)s'"
+    QUERY = "SELECT * FROM news WHERE symbol = '%(symbol)s' AND sentiment != 'I'"
     QUERY =  QUERY + TIME_FILTER
     DF_NEWS = pd.read_sql(QUERY % {"symbol":SYMBOL}, CONNECTION)
 
