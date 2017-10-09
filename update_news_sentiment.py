@@ -26,7 +26,7 @@ def update_sentiment(finance, rows):
             sentiment = input("Sentiment: 'G=Good/Positive', 'B=Bad/Negative', 'N=Neutral', 'I=Ingore'").upper()
             if sentiment[0] == "G" or sentiment[0] == "B" or sentiment[0] == "N" or sentiment[0] == "I":
                 choice_made = True
-                finance.update_sentiment(row[7], sentiment[0])
+                finance.update_sentiment(row[7], sentiment[0], row[0])
             else:
                 print("Invalid choice")
         

@@ -104,19 +104,19 @@ class FinanceDB():
         rows = cursor.fetchall()
         return rows
 
-    def update_sentiment(self, hash_val, sentiment):
+    def update_sentiment(self, hash_val, sentiment, symbol):
         """ set sentiment for row """
-        update_sql = "UPDATE news SET sentiment = ? WHERE hash = ? "
+        update_sql = "UPDATE news SET sentiment = ? WHERE hash = ? AND symbol = ? "
         cursor = self.connection.cursor()
-        cursor.execute(update_sql, [sentiment, hash_val])
+        cursor.execute(update_sql, [sentiment, hash_val, symbol])
         cursor.close()
         self.connection.commit()
 
-    def update_weight(self, hash_val, weight):
+    def update_weight(self, hash_val, weight, symbol):
         """ set weight for row """
-        update_sql = "UPDATE news SET weight = ? WHERE hash = ? "
+        update_sql = "UPDATE news SET weight = ? WHERE hash = ? AND symbol = ? "
         cursor = self.connection.cursor()
-        cursor.execute(update_sql, [weight, hash_val])
+        cursor.execute(update_sql, [weight, hash_val, symbol])
         cursor.close()
         self.connection.commit()
 

@@ -26,7 +26,9 @@ class BiasWeights():
                 classify_news = NewsClassifyEx.ClassifyNews(symbol, news_item)
                 sentiment = classify_news.classify()
                 weight = self._bias_weight(symbol, time, sentiment)
-                self.finance.update_weight(weight, row[7])
+                if symbol == 'AAPL' and weight < 76:
+                    print("hello")
+                self.finance.update_weight(row[7], weight, symbol)
 
     def _bias_weight(self, symbol, time, weight):
         """
@@ -61,6 +63,7 @@ class BiasWeights():
         else:
             weighted_price = 0
         weight = weighted_price + (weight * weighted_price)/100
-        print("Symbol: ", symbol, ". Time: ", time, ". Price: ", weighted_price, \
-              ". Weight adjusted price: ", weight)
+        if symbol == "AAPL":
+            print("Symbol: ", symbol, ". Time: ", time, ". Price: ", weighted_price, \
+                  ". Weight adjusted price: ", weight)
         return weight

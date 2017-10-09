@@ -101,7 +101,7 @@ def update_sentiment(finance, rows, predict):
                 choice = sentiment[0]
             if choice == "G" or choice == "B" or choice == "N" or choice == "I":
                 choice_made = True
-                finance.update_sentiment(row[7], choice)
+                finance.update_sentiment(row[7], choice, row[0])
             else:
                 print("Invalid choice")
         row_index += 1

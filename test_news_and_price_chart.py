@@ -37,7 +37,7 @@ if __name__ == "__main__":
     #DF_NEWS['weight'] = DF_NEWS['weight'].apply(lambda x: x+70)
 
     FIG = plt.figure()
-    FIG.suptitle('Scatter/Line Plot', fontsize=14, fontweight='bold')
+    FIG.suptitle( SYMBOL + '-Scatter/Line Plot', fontsize=14, fontweight='bold')
     AX_NEWS = FIG.add_subplot(111)
     FIG.subplots_adjust(top=0.85)
     AX_NEWS.set_xlabel('Date/Time')
