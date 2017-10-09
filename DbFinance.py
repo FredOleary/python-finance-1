@@ -53,6 +53,7 @@ class FinanceDB():
             self.connection.close()
 
     def get_stock_data(self):
+        """ Stock_data accessor """
         return self.stock_data
 
     def add_quotes(self, symbol, quotes):
@@ -73,6 +74,7 @@ class FinanceDB():
                 #print("value already added for time: ", quote["time"])
 
     def get_without_sentiment(self):
+        """ access all rows where sentiment has not been set """
         cursor = self.connection.cursor()
         cursor.execute("SELECT * FROM news WHERE sentiment IS NULL")
         rows = cursor.fetchall()
@@ -80,12 +82,14 @@ class FinanceDB():
 
 
     def get_news_with_sentiment(self):
+        """ access all rows where sentiment has been set """
         cursor = self.connection.cursor()
         cursor.execute("SELECT * FROM news WHERE sentiment IS NOT NULL")
         rows = cursor.fetchall()
         return rows
 
     def get_prices_before(self, symbol, time):
+        """ get prices up to time """
         query = "SELECT * FROM prices WHERE symbol = ? AND time <= ? ORDER BY TIME DESC LIMIT 5"
         cursor = self.connection.cursor()
         cursor.execute(query, [symbol, time])
@@ -93,19 +97,29 @@ class FinanceDB():
         return rows
 
     def get_prices_after(self, symbol, time):
+        """ get prices onwards from time """
         query = "SELECT * FROM prices WHERE symbol = ? AND time >= ? ORDER BY TIME ASC LIMIT 5"
         cursor = self.connection.cursor()
         cursor.execute(query, [symbol, time])
         rows = cursor.fetchall()
         return rows
 
-    def update_sentiment( self, hash, sentiment):
+    def update_sentiment(self, hash_val, sentiment):
+        """ set sentiment for row """
         update_sql = "UPDATE news SET sentiment = ? WHERE hash = ? "
         cursor = self.connection.cursor()
-        cursor.execute(update_sql, [sentiment, hash])
+        cursor.execute(update_sql, [sentiment, hash_val])
         cursor.close()
         self.connection.commit()
-        
+
+    def update_weight(self, hash_val, weight):
+        """ set weight for row """
+        update_sql = "UPDATE news SET weight = ? WHERE hash = ? "
+        cursor = self.connection.cursor()
+        cursor.execute(update_sql, [weight, hash_val])
+        cursor.close()
+        self.connection.commit()
+
     def get_quotes(self, symbol):
         """ Fetch prices for symbol """
         cursor = self.connection.cursor()
@@ -126,7 +140,7 @@ class FinanceDB():
                                news["description"], \
                                0, \
                                aggregator, \
-                               news_hash,
+                               news_hash, \
                                None])
                     self.connection.commit()
     def _news_already_added(self, symbol, news):
@@ -136,7 +150,8 @@ class FinanceDB():
                 blake_hash.update(news["description"].encode())
                 news_hash = blake_hash.hexdigest()
                 cursor = self.connection.cursor()
-                cursor.execute("SELECT * FROM news WHERE symbol = ? AND  hash = ? ", [symbol, news_hash])
+                cursor.execute("SELECT * FROM news WHERE symbol = ? AND  hash = ? ",\
+                               [symbol, news_hash])
                 rows = cursor.fetchall()
                 if rows:
                     #print("News item already exists in database")
@@ -144,8 +159,8 @@ class FinanceDB():
                 return news_hash
             else:
                 return None
-        except:
-            logging.error(" failed to hash...")
+        except Exception as ex:
+            logging.error(" failed to hash..." + str(ex))
             return None
 
     def _create_verify_tables(self):

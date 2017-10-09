@@ -6,7 +6,6 @@ Created on Tue Aug  8 19:35:54 2017
 @author: fredoleary
 """
 import re
-import NewsKeywords
 import logging
 
 
@@ -21,7 +20,7 @@ class ClassifyNews():
     """
     def __init__(self, symbol, newsItem):
         self.symbol = symbol
-        self.name = "XXX" # TODO - Stock name isn't known!!!
+        self.name = "XXX" # TODO - Stock name isn't known!!! Name should really be in the news item table
         self.news_item = newsItem
 
     def classify(self):
@@ -68,7 +67,7 @@ class ClassifyNews():
         elif self.news_item["sentiment"] == "N":
             sentiment = 0
         else:
-            logging.error("Invalid sentiment: " + self.newsItem["sentiment"])
+            logging.error("Invalid sentiment: " + self.news_item["sentiment"])
         return sentiment
 
     def _create_reg_ex(self, term):

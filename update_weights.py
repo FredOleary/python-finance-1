@@ -6,13 +6,16 @@ Created on Mon Aug  7 17:04:10 2017
 @author: fredoleary
 """
 
-import sqlite3
 from platform import python_version
 from BiasWeight import BiasWeights
+from DbFinance import FinanceDB
+from CompanyList import CompanyWatch
 
 if __name__ == "__main__":
     print('Python', python_version())
-    CONNECTION = sqlite3.connect("FinanceDb")
-    BIAS = BiasWeights(CONNECTION)
+    COMPANIES = CompanyWatch()
+    FINANCE = FinanceDB(COMPANIES.get_companies())
+    FINANCE.initialize()
+
+    BIAS = BiasWeights(FINANCE)
     BIAS.update_weights()
-    CONNECTION.close()

@@ -5,22 +5,15 @@ Created on Thu Aug 17 14:52:15 2017
 
 @author: fredoleary
 """
-from dateutil import parser
 import NewsClassifyEx
-from DbFinance import FinanceDB
-from CompanyList import CompanyWatch
 
 class BiasWeights():
     """ Update news weights for all news items """
-    def __init__(self, connection):
-        self.connection = connection
-        self.finance = None
+    def __init__(self, finance):
+        self.finance = finance
 
     def update_weights(self):
         """ Iterate all news items and refresh weights"""
-        companies = CompanyWatch()
-        self.finance = FinanceDB(companies.get_companies())
-        self.finance.initialize()
 
         rows = self.finance.get_news_with_sentiment()
         for row in rows:
@@ -28,17 +21,12 @@ class BiasWeights():
             time = row[1]
             sentiment = row[8]
             if sentiment != "I":
-                news_item = {"title":row[3], "description":row[4], "hash":row[7], "sentiment":sentiment}
+                news_item = {"title":row[3], "description":row[4], "hash":row[7], \
+                             "sentiment":sentiment}
                 classify_news = NewsClassifyEx.ClassifyNews(symbol, news_item)
                 sentiment = classify_news.classify()
                 weight = self._bias_weight(symbol, time, sentiment)
-                update_sql = "UPDATE news SET weight = ? WHERE hash = ? "
-                cursor = self.connection.cursor()
-                cursor.execute(update_sql, [weight, row[7]])
-                cursor.close()
-#            if sentiment != 0:
-#                print("Found sentiment: ", sentiment, " title: ", html.unescape(row[3]))
-        self.connection.commit()
+                self.finance.update_weight(weight, row[7])
 
     def _bias_weight(self, symbol, time, weight):
         """
@@ -72,6 +60,7 @@ class BiasWeights():
             weighted_price = price_after
         else:
             weighted_price = 0
-
         weight = weighted_price + (weight * weighted_price)/100
+        print("Symbol: ", symbol, ". Time: ", time, ". Price: ", weighted_price, \
+              ". Weight adjusted price: ", weight)
         return weight

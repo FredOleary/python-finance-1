@@ -43,7 +43,7 @@ if __name__ == "__main__":
     FINANCE.close()
 
     CONNECTION = sqlite3.connect("FinanceDb")
-    BIAS = BiasWeights(CONNECTION)
+    BIAS = BiasWeights(FINANCE)
     BIAS.update_weights()
     CONNECTION.close()
     logging.info("Weights updated")
