@@ -84,7 +84,7 @@ def update_sentiment(finance, rows, predict):
         choice_made = False
         while choice_made is False:
             print("----------------------------------------")
-            print("Source: ", row[2],". Date: ", row[1], ". Title: ", html.unescape(row[3]))
+            print("Symbol: ", row[0], ". Source: ", row[2],". Date: ", row[1], ". Title: ", html.unescape(row[3]))
             print("\nDescription: ", html.unescape(row[4]))
             choice = 'X'
             if predict[row_index][0] == 1:
