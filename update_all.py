@@ -40,12 +40,12 @@ if __name__ == "__main__":
         FINANCE.add_news(COMPANY["symbol"], NEWS, "City Falcon")
         logging.info("News updated - cityFalcon aggregator")
 
-    FINANCE.close()
-
-    CONNECTION = sqlite3.connect("FinanceDb")
+ 
+#    CONNECTION = sqlite3.connect("FinanceDb")
     BIAS = BiasWeights(FINANCE)
     BIAS.update_weights()
-    CONNECTION.close()
+    FINANCE.close()
+
     logging.info("Weights updated")
 
     logging.info("Done")
