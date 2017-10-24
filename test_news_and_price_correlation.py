@@ -9,16 +9,66 @@ Created on Mon Aug  7 17:04:10 2017
 from platform import python_version
 import sqlite3
 import argparse
-import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
+import dateutil.parser
+from datetime import timedelta  
+import math
 
+def pad_news( df_in, column_name ):
+    """ pad news/price data_frame on minute boundry using linear extrapolation"""
+    print("Extrapolating:", column_name)
+    print("")
+    next_index = 1
+    df_out = pd.DataFrame({})
+    while next_index < len(df_in):
+        df_begin = pd.DataFrame([[df_in.loc[next_index-1,"time"],df_in.loc[next_index-1,column_name]]], columns=['time', column_name])
+        df_out = df_out.append(df_begin, ignore_index=True)
+        start_time = df_begin.loc[0,"time"]
+        dt_start = dateutil.parser.parse(start_time)
+        
+        df_end = pd.DataFrame([[df_in.loc[next_index,"time"],df_in.loc[next_index,column_name]]], columns=['time', column_name])
+        end_time = df_end.loc[0,"time"]
+        dt_end = dateutil.parser.parse(end_time)
+        delta = dt_end - dt_start
+        diff_seconds = range_seconds = delta.total_seconds()
+        delta_seconds = 0
+        range_weight = df_end.loc[0, column_name] - df_begin.loc[0, column_name]
+        while diff_seconds > 60:
+            sec_delta = 60 - dt_start.second
+            delta_seconds += sec_delta
+            """ Algoritm delta_seconds/range_seconds = delta_weigth/range_weight"""
+            delta_weigth = (delta_seconds/range_seconds)*range_weight
+            extrap_weight  = delta_weigth + df_begin.loc[0, column_name]
+            dt_start = dt_start + timedelta(seconds=sec_delta)
+            df_append = pd.DataFrame([[dt_start.strftime("%Y-%m-%d %H:%M:%S"),extrap_weight]], columns=['time', column_name])
+            df_out = df_out.append(df_append, ignore_index=True)
+            diff_seconds -= sec_delta
+            
+        next_index += 1
+    return df_out
+
+def fill_price_na(df_m):
+    """ fill NaNs in the price column where news item has fractional seconds
+        The merge of Price and News will create nans in the price column when
+        news is not on a minute boundry"""
+    index = 0
+    while (index+2) < len(df_m):
+        first = df_m.loc[index, "price"]
+        second = df_m.loc[index+1, "price"]
+        third = df_m.loc[index+2, "price"]
+        if not math.isnan(first) and \
+           math.isnan(second) and \
+           not math.isnan(third):
+               df_m.loc[index+1, "price"] = (first+third)/2
+        index +=1            
+                          
 if __name__ == "__main__":
     print('Python', python_version())
     parser = argparse.ArgumentParser()
     parser.add_argument("-t", "--ticker", help="Ticker to chart, (MSFT, AAPL..., Default=AAPL)", dest="ticker", default="AAPL")
-    parser.add_argument("-s", "--start", help="Start Time, (2017-10-09 00:00:00, Default=none)", dest="start", default= None)
-    parser.add_argument("-e", "--end", help="End Time, (2017-10-09 20:00:00, Default=none)", dest="end", default= None)
+    parser.add_argument("-s", "--start", help="Start Time, (2017-10-09 00:00:00, Default=none)", dest="start", default= "2017-10-22 20:00:00")
+    parser.add_argument("-e", "--end", help="End Time, (2017-10-09 20:00:00, Default=none)", dest="end", default= "2017-10-23 20:00:00")
     args = parser.parse_args()
     print("Ticker: ", args.ticker)
 
@@ -30,64 +80,63 @@ if __name__ == "__main__":
 #    TIME_FILTER =  "AND time BETWEEN '2017-09-26 13:30:00' AND '2017-09-26 20:00:00'"
     TIME_FILTER = ""
     if args.start is not None and args.end is None:
-        TIME_FILTER = " time >= " + args.start
+        TIME_FILTER = " AND time >= '" + args.start + "'"
     elif args.start is None and args.end is not None:    
-        TIME_FILTER = " time  <= " + args.end
+        TIME_FILTER = " AND time  <= '" + args.end + "'"
     elif args.start is not None and args.end is not None:    
-        TIME_FILTER =  " AND time BETWEEN " + args.start + " AND " + args.end
+        TIME_FILTER =  " AND time BETWEEN '" + args.start + "' AND '" + args.end + "'"
 
     CONNECTION = sqlite3.connect("FinanceDb")
 
     QUERY = "SELECT time, weight FROM news WHERE symbol = '%(symbol)s' AND sentiment != 'I' AND sentiment != 'N'"
     QUERY =  QUERY + TIME_FILTER
+    QUERY =  QUERY + " ORDER BY time"
     print("Query:" + QUERY)
     DF_NEWS = pd.read_sql(QUERY % {"symbol":SYMBOL}, CONNECTION)
+    DF_NEWS = pad_news(DF_NEWS, 'weight')
     
     QUERY = "SELECT time, price FROM prices WHERE symbol = '%(symbol)s'"
     QUERY =  QUERY + TIME_FILTER
+    QUERY =  QUERY + " ORDER BY time"
     DF_PRICE = pd.read_sql(QUERY % {"symbol":SYMBOL}, CONNECTION)
+    DF_PRICE = pad_news(DF_PRICE, 'price')
     
     
     DF_MERGE = pd.merge(DF_PRICE, DF_NEWS, how='outer', on='time', left_on=None, right_on=None,
          left_index=False, right_index=False, sort=True,
-         suffixes=('_x', '_y'), copy=True, indicator=False)
+         suffixes=('_x', '_y'), copy=True, indicator=True)
     
-    # because pandas treats 'nan' values as gaps in charts, use the ffill 
-    # to force lines. Note that ffill doesn't extrapolate
-   # DF_MERGE['price'] = DF_MERGE['price'].fillna(method='ffill')
-   #DF_MERGE['weight'] = DF_MERGE['weight'].fillna(method='ffill')
+    fill_price_na(DF_MERGE)
+    
+    max_correlation = 0
+    best_shift = 0
+    for shift in range(1000):
+        correlation = DF_MERGE['price'].shift(-shift).corr(DF_MERGE['weight'])
+        if correlation > max_correlation:
+            max_correlation = correlation
+            best_shift = -shift
+    for shift in range(1000):
+        correlation = DF_MERGE['price'].shift(shift).corr(DF_MERGE['weight'])
+        if correlation > max_correlation:
+            max_correlation = correlation
+            best_shift = shift
+            
+    print("Best price Shift:", best_shift, "Correlation:", max_correlation )
 
-    # May need to bias the weight to better chart prices
-    #DF_NEWS['weight'] = DF_NEWS['weight'].apply(lambda x: x+70)
-    #print( DF_MERGE.iloc[:1000])
-#    for index in range(len(DF_MERGE)):
-#         if not np.isnan( DF_MERGE.iloc[index]['weight'] ):
-#             print( DF_MERGE.iloc[index])
     FIG = plt.figure()
     FIG.suptitle( SYMBOL + '-Scatter/Line Plot', fontsize=14, fontweight='bold')
     AX_NEWS = FIG.add_subplot(111)
     FIG.subplots_adjust(top=0.85)
     AX_NEWS.set_xlabel('Date/Time')
-    AX_NEWS.set_ylabel('Weight')
-#    AX_NEWS.plot_date(DF_MERGE['time'], DF_MERGE['weight'], 'b-', xdate=True, ydate=False, color='skyblue')
+    AX_NEWS.set_ylabel('Price/Weight')#    AX_NEWS.plot_date(DF_MERGE['time'], DF_MERGE['weight'], 'b-', xdate=True, ydate=False, color='skyblue')
     
-    if True:
-        AX_PRICE = FIG.add_subplot(111)
-        FIG.subplots_adjust(top=0.85)
+    AX_PRICE = FIG.add_subplot(111)
 
-        AX_PRICE.set_xlabel('Date/Time')
-        AX_PRICE.set_ylabel('price')
-
-
-        AX_PRICE.plot_date(DF_MERGE['time'], DF_MERGE['price'], '-', xdate=True, ydate=False, color='red')
-    AX_NEWS.plot_date(DF_MERGE['time'], DF_MERGE['weight'], '.', xdate=True, ydate=False, color='green')
+    AX_PRICE.plot_date(DF_MERGE['time'], DF_MERGE['price'], '-', xdate=True, ydate=False, color='red')
+    AX_NEWS.plot_date(DF_MERGE['time'], DF_MERGE['weight'], '-', xdate=True, ydate=False, color='green')
+    AX_PRICE.plot_date(DF_MERGE['time'], DF_MERGE['price'].shift(best_shift), '-', xdate=True, ydate=False, color='blue')
     FIG.autofmt_xdate()
     plt.show()
     
-    correlation = DF_MERGE['price'].corr(DF_MERGE['weight'])
-    
-    foo = pd.rolling_corr(DF_MERGE.price, DF_MERGE.weight, window=0).plot(style='-g')
-    
- #   bar = DF_MERGE['price'].rolling(window=90).corr(other=DF_MERGE['price'])
-    print(correlation)
+  
     
