@@ -62,13 +62,42 @@ def fill_price_na(df_m):
            not math.isnan(third):
                df_m.loc[index+1, "price"] = (first+third)/2
         index +=1            
-                          
+def create_figure( df_merge, symbol, shift):
+    fig = plt.figure()
+    fig.suptitle( symbol + '-Line Plot. Price shift: ' + str(shift), fontsize=14, fontweight='bold')
+    ax_plot = fig.add_subplot(111)
+    ax_plot.set_xlabel('Date/Time') 
+    ax_plot.set_ylabel('Price/Weight')
+    
+    #AX_PRICE = FIG.add_subplot(111)
+
+    ax_plot.plot_date(df_merge['time'], df_merge['price'], '-', xdate=True, ydate=False, color='red')
+    ax_plot.plot_date(df_merge['time'], df_merge['weight'], '-', xdate=True, ydate=False, color='green')
+    ax_plot.plot_date(df_merge['time'], df_merge['price'].shift(best_shift), '-', xdate=True, ydate=False, color='blue')
+    fig.autofmt_xdate()
+    return fig
+     
+def eval_best_correlation(df_merge):
+    max_correlation = 0
+    best_shift = 0
+    for shift in range(1000):
+        correlation = df_merge['price'].shift(-shift).corr(df_merge['weight'])
+        if correlation > max_correlation:
+            max_correlation = correlation
+            best_shift = -shift
+    for shift in range(1000):
+        correlation = df_merge['price'].shift(shift).corr(df_merge['weight'])
+        if correlation > max_correlation:
+            max_correlation = correlation
+            best_shift = shift
+    return  max_correlation, best_shift
+    
 if __name__ == "__main__":
     print('Python', python_version())
     parser = argparse.ArgumentParser()
     parser.add_argument("-t", "--ticker", help="Ticker to chart, (MSFT, AAPL..., Default=AAPL)", dest="ticker", default="AAPL")
-    parser.add_argument("-s", "--start", help="Start Time, (2017-10-09 00:00:00, Default=none)", dest="start", default= "2017-10-22 20:00:00")
-    parser.add_argument("-e", "--end", help="End Time, (2017-10-09 20:00:00, Default=none)", dest="end", default= "2017-10-23 20:00:00")
+    parser.add_argument("-s", "--start", help="Start Time, (2017-10-09 00:00:00, Default=none)", dest="start", default= "2017-10-16 20:00:00")
+    parser.add_argument("-e", "--end", help="End Time, (2017-10-09 20:00:00, Default=none)", dest="end", default= "2017-10-24 20:00:00")
     args = parser.parse_args()
     print("Ticker: ", args.ticker)
 
@@ -108,35 +137,14 @@ if __name__ == "__main__":
     
     fill_price_na(DF_MERGE)
     
-    max_correlation = 0
-    best_shift = 0
-    for shift in range(1000):
-        correlation = DF_MERGE['price'].shift(-shift).corr(DF_MERGE['weight'])
-        if correlation > max_correlation:
-            max_correlation = correlation
-            best_shift = -shift
-    for shift in range(1000):
-        correlation = DF_MERGE['price'].shift(shift).corr(DF_MERGE['weight'])
-        if correlation > max_correlation:
-            max_correlation = correlation
-            best_shift = shift
-            
+    max_correlation, best_shift = eval_best_correlation(DF_MERGE)
+    
+    FIG1 = create_figure( DF_MERGE, SYMBOL,  best_shift)        
+    FIG1.show()
+    
     print("Best price Shift:", best_shift, "Correlation:", max_correlation )
 
-    FIG = plt.figure()
-    FIG.suptitle( SYMBOL + '-Scatter/Line Plot', fontsize=14, fontweight='bold')
-    AX_NEWS = FIG.add_subplot(111)
-    FIG.subplots_adjust(top=0.85)
-    AX_NEWS.set_xlabel('Date/Time')
-    AX_NEWS.set_ylabel('Price/Weight')#    AX_NEWS.plot_date(DF_MERGE['time'], DF_MERGE['weight'], 'b-', xdate=True, ydate=False, color='skyblue')
-    
-    AX_PRICE = FIG.add_subplot(111)
-
-    AX_PRICE.plot_date(DF_MERGE['time'], DF_MERGE['price'], '-', xdate=True, ydate=False, color='red')
-    AX_NEWS.plot_date(DF_MERGE['time'], DF_MERGE['weight'], '-', xdate=True, ydate=False, color='green')
-    AX_PRICE.plot_date(DF_MERGE['time'], DF_MERGE['price'].shift(best_shift), '-', xdate=True, ydate=False, color='blue')
-    FIG.autofmt_xdate()
-    plt.show()
+    input()
     
   
     
